@@ -45,6 +45,7 @@
 
 /* USER CODE BEGIN PV */
 
+#define DWT_CTRL  (*(volatile uint32_t*)0xE0001000)
 
 /* USER CODE END PV */
 
@@ -78,7 +79,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+   HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -94,11 +95,19 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+
+  //Enable CYCCNT counter
+
+  DWT_CTRL |= (1 << 0);
+
+  SEGGER_SYSVIEW_Conf();
+  SEGGER_SYSVIEW_Start();
+
   status =  xTaskCreate(task1_handler, "Task-1",200, "Hello World 1", 1, &task1_handle);
 
   configASSERT(status == pdPASS);
 
-  status =  xTaskCreate(task2_handler, "Task-1",200, "Hello World 2", 1, &task2_handle);
+  status =  xTaskCreate(task2_handler, "Task-2",200, "Hello World 2", 1, &task2_handle);
 
   configASSERT(status == pdPASS);
 
@@ -111,6 +120,7 @@ int main(void)
 
 
   /* USER CODE END 2 */
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -309,20 +319,22 @@ static void MX_GPIO_Init(void)
 
 static void task1_handler(void* parameters)
 {
-
+	char msg[100];
 	while(1)
 	{
-		printf("%s\n", (char*)parameters);
+		snprintf(msg,100,"%s\n", (char*)parameters);
+		SEGGER_SYSVIEW_PrintfTarget(msg);
 		taskYIELD();
 	}
 }
 
 static void task2_handler(void* parameters)
 {
-
+	char msg[100];
 	while(1)
 	{
-		printf("%s\n", (char*)parameters);
+		snprintf(msg,100,"%s\n", (char*)parameters);
+		SEGGER_SYSVIEW_PrintfTarget(msg);
 		taskYIELD();
 	}
 
